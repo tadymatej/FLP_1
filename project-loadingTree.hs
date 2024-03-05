@@ -84,26 +84,30 @@ beginsWithLeaf str = (length str >= 6) && str !! 0 == 'L' && str !! 1 == 'e' && 
 
 --decisionTree_clasify :: DecisionTree -> String
 
-convertToDoubles2 :: String -> Char -> Char -> [[Double]]
-convertToDoubles2 "" _ _ = [] : [[]]
-convertToDoubles2 (a: rest) endChar endChar2 
-    | a == endChar2 = do
-        -- now process a new data
-        -- here will be decisionTree processing
+convertToGridOfDoubles :: String -> Char -> Char -> [[Double]]
+convertToGridOfDoubles "" _ _ = [[]]
+convertToGridOfDoubles (a: rest) endChar endChar2 = do
+    let (row, continue, remainingStr) = convertToDoubles (a : rest) endChar endChar2
+    convertToGridOfDoublesContinue remainingStr endChar endChar2 row continue
 
-        let res = (convertToDoubles2 rest endChar endChar2)
-        [] : res
+
+convertToGridOfDoublesContinue :: String -> Char -> Char -> [Double] -> Int -> [[Double]]
+convertToGridOfDoublesContinue str endChar endChar2 res continue 
+    | continue == 1 = res : convertToGridOfDoubles str endChar endChar2
+    | otherwise = [res]
+
+convertToDoubles :: String -> Char -> Char -> ([Double], Int, String)
+convertToDoubles "" _ _ = ([], 0, "")
+convertToDoubles (a: rest) endChar endChar2 
+    | a == endChar2 = do
+        ([], 1, (rest))
     | otherwise = case reads (a:rest) of
     [(x, rest)] -> do 
-        let res = convertToDoubles2 (dropWhile (== endChar) rest) endChar endChar2
-        let lastItem = last res
-        let headItems = init res
-        (x : lastItem) : headItems
+        let (res, val, remainingStr) = convertToDoubles (dropWhile (== endChar) rest) endChar endChar2
+        ((x : res), val, remainingStr)
     _           -> do 
-        let res = convertToDoubles2 "" endChar endChar2
-        let lastItem = last res
-        let headItems = init res
-        (0 : lastItem) : headItems
+        let (res, val, remainingStr) = convertToDoubles "" endChar endChar2
+        ((0 : res), val, remainingStr)
 
 
 
@@ -146,7 +150,7 @@ main = do
     printDecisionTree tree
 
     contents <- readFile "b.txt"
-    let grid = (convertToDoubles2 contents ',' '\n')
+    let grid = (convertToGridOfDoubles contents ',' '\n')
     printGrid grid
 
     --let grid = ([4,5,6] : [[1, 2, 3]])
