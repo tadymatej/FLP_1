@@ -174,7 +174,7 @@ convertToGridOfTrainingData (a: rest) endChar endChar2 = do
 
 
 convertToGridOfTrainingDataContinue :: String -> Char -> Char -> ([Double], String) -> Int -> [([Double], String)]
-convertToGridOfTrainingDataContinue "" endChar endChar2 res continue = []
+convertToGridOfTrainingDataContinue "" endChar endChar2 res continue = [res]
 convertToGridOfTrainingDataContinue (a : str) endChar endChar2 res continue 
      = res : convertToGridOfTrainingData (a:str) endChar endChar2
 
@@ -202,7 +202,60 @@ splitData inputData processingIndex (aI, aT)
             then (inputData !! processingIndex : leftData, rightData)
             else (leftData, inputData !! processingIndex : rightData)
 
+------------------------ Learning decision tree ----------------------------
 
+addToUniqArray :: [String] -> String -> [String]
+addToUniqArray [] item = [item]
+addToUniqArray (firstArrayItem:arrayRest) item 
+    | firstArrayItem == item = (firstArrayItem:arrayRest)
+    | otherwise = firstArrayItem : addToUniqArray arrayRest item
+
+findIndexOf :: [String] -> String -> Int 
+findIndexOf array findItem = findIndexOfHelper array findItem 0
+
+findIndexOfHelper :: [String] -> String -> Int -> Int
+findIndexOfHelper [] findItem _ = -1
+findIndexOfHelper (firstItem:arrayRest) findItem position 
+    | firstItem == findItem = position
+    | otherwise = findIndexOfHelper arrayRest findItem (position + 1) 
+
+
+arrayPush :: [Int] -> Int -> [Int]
+arrayPush [] item = [item]
+arrayPush (firstItem:arrayRest) item = firstItem : arrayPush arrayRest item
+
+setValueAt :: [Int] -> Int -> Int -> [Int]
+setValueAt (firstItem : arrayRest) value pos 
+    | pos == 0 = value : arrayRest
+    | otherwise = firstItem : setValueAt arrayRest value (pos - 1)
+
+initBuckets :: [([Double], String)] -> Int -> ([Int], [Int], [String])
+initBuckets [] _ = ([], [], [])
+initBuckets inputData processingIndex
+    | length(inputData) <= (processingIndex) = ([], [], [])
+    | otherwise = do 
+    let (leftBucket, rightBucket, classes) = initBuckets inputData (processingIndex + 1)
+    let (inputDataRow, className) = inputData !! processingIndex
+    let oldClassesLen = length(classes)
+    let newClasses = addToUniqArray classes className
+    let newClassesLen = length(newClasses)
+    if(newClassesLen == oldClassesLen)
+        then do 
+            let classIndex = findIndexOf newClasses className
+            -- let leftBucketNewValue = (leftBucketNew !! classIndex + 1)
+            let rightBucketNewValue = (rightBucket !! classIndex + 1)
+            let rightBucketNew = setValueAt rightBucket rightBucketNewValue classIndex
+            (leftBucket, rightBucketNew, newClasses)
+        else do 
+            let leftBucketNew = arrayPush leftBucket 0
+            let rightBucketNew = arrayPush rightBucket 1
+            (leftBucketNew, rightBucketNew, newClasses)
+    
+
+learnDecisionTree :: [([Double], String)] -> Int -> DecisionTree Int Double String 
+learnDecisionTree inputData processingIndex = do 
+    let (leftBucket, rightBucket, classes) = initBuckets inputData 0
+    EmptyTree
 
 main :: IO ()
 main = do
@@ -230,6 +283,11 @@ main = do
     putStrLn "---------"
     printList (rightData)
     putStrLn "---------"
+
+    let (leftBucket, rightBucket, classes) = initBuckets trainingData 0
+    print leftBucket
+    print rightBucket
+    print classes
 
     let grid = ([4,5,6] : [[1, 2, 3]])
     printGrid grid
