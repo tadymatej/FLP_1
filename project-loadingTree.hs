@@ -17,6 +17,21 @@ printDecisionTree (Node index threshold left right) = do
 printDecisionTree (Leaf className) = putStrLn $ "Leaf: Class = " ++ show className
 
 
+printGrid :: [[Double]] -> IO ()
+printGrid [] = putStrLn ""  -- Pokud je pole prázdné, vypíšeme prázdný řádek
+printGrid (row:rows) = do   -- Výpis každého řádku pole
+  printRow row              -- Vypíšeme aktuální řádek
+  printGrid rows            -- Rekurzivně zavoláme printGrid pro zbytek pole
+
+-- Funkce pro výpis řádku pole
+printRow :: [Double] -> IO ()
+printRow [] = putStrLn ""           -- Pokud je řádek prázdný, vypíšeme prázdný řádek
+printRow (x:xs) = do                -- Výpis každého prvku řádku
+  putStr (show x ++ " ")            -- Vypíšeme aktuální prvek s mezerou
+  printRow xs  
+
+
+
 ------------------------------------------------
 --- Start of loading tree ------
 
@@ -29,7 +44,7 @@ readUntilChar (begin:rest) a
 removeUntilChar :: String -> Char -> String
 removeUntilChar "" a = ""
 removeUntilChar (begin:rest) a
-    | begin == a = rest
+    | begin == a = (rest)
     | otherwise = removeUntilChar rest a
 
 convertToDouble :: String -> String -> Double
@@ -82,7 +97,35 @@ beginsWithLeaf str = (length str >= 6) && str !! 0 == 'L' && str !! 1 == 'e' && 
 ----------------------------------------------
 ---- Start of clasifying ----------
 
---decisionTree_clasify :: DecisionTree -> String
+decisionTree_clasifyAll :: DecisionTree Int Double String -> [[Double]] -> Int -> [String]
+decisionTree_clasifyAll EmptyTree _ _ = []
+decisionTree_clasifyAll _ [[]] _ = []
+decisionTree_clasifyAll (Leaf className) _ _ = [className]
+decisionTree_clasifyAll tree inputMatrix processingIndex 
+    | length(inputMatrix) <= processingIndex = []
+    | otherwise = decisionTree_clasifyAllHelper tree inputMatrix processingIndex
+
+decisionTree_clasifyAllHelper :: DecisionTree Int Double String -> [[Double]] -> Int -> [String]
+decisionTree_clasifyAllHelper tree inputMatrix processingIndex
+    = (decisionTree_clasify tree (inputMatrix !! processingIndex)) : (decisionTree_clasifyAll tree inputMatrix (processingIndex + 1))
+
+decisionTree_clasify :: DecisionTree Int Double String -> [Double] -> String
+decisionTree_clasify (Leaf className) arr = className
+decisionTree_clasify EmptyTree arr = ""
+decisionTree_clasify (Node aI aT (left) (right)) arr 
+    | (arr !! aI) >= aT = decisionTree_clasify right arr
+    | otherwise = decisionTree_clasify left arr
+
+
+-------- End of clasifying ---------
+-----------------------------------------------
+
+
+
+
+
+------- Start of data reading ----------
+----------------------------------------
 
 convertToGridOfDoubles :: String -> Char -> Char -> [[Double]]
 convertToGridOfDoubles "" _ _ = [[]]
@@ -109,49 +152,84 @@ convertToDoubles (a: rest) endChar endChar2
         let (res, val, remainingStr) = convertToDoubles "" endChar endChar2
         ((0 : res), val, remainingStr)
 
-
-
--------- End of clasifying ---------
------------------------------------------------
-
-
-
-
-
-------- Start of data reading ----------
-----------------------------------------
-
-
-
-
 ---------- End of data reading -----------
 -----------------------------------------
 
+-----------------------------------------------------------------------------------------------------------
+------------------------------------- TASK 2 - Training of decision tree ----------------------------------
+-----------------------------------------------------------------------------------------------------------
 
-printGrid :: [[Double]] -> IO ()
-printGrid [] = putStrLn ""  -- Pokud je pole prázdné, vypíšeme prázdný řádek
-printGrid (row:rows) = do   -- Výpis každého řádku pole
-  printRow row              -- Vypíšeme aktuální řádek
-  printGrid rows            -- Rekurzivně zavoláme printGrid pro zbytek pole
 
--- Funkce pro výpis řádku pole
-printRow :: [Double] -> IO ()
-printRow [] = putStrLn ""           -- Pokud je řádek prázdný, vypíšeme prázdný řádek
-printRow (x:xs) = do                -- Výpis každého prvku řádku
-  putStr (show x ++ " ")            -- Vypíšeme aktuální prvek s mezerou
-  printRow xs  
+printList :: [([Double], String)] -> IO ()
+printList [] = putStrLn "Empty list"
+printList ((nums, str):rest) = do
+  putStrLn $ show nums ++ ", " ++ str
+  printList rest
+
+
+convertToGridOfTrainingData :: String -> Char -> Char -> [([Double], String)]
+convertToGridOfTrainingData (a: rest) endChar endChar2 = do
+    let ((row, classs), continue, remainingStr) = convertToTrainingData (a : rest) endChar endChar2
+    convertToGridOfTrainingDataContinue remainingStr endChar endChar2 (row, classs) continue
+
+
+convertToGridOfTrainingDataContinue :: String -> Char -> Char -> ([Double], String) -> Int -> [([Double], String)]
+convertToGridOfTrainingDataContinue "" endChar endChar2 res continue = []
+convertToGridOfTrainingDataContinue (a : str) endChar endChar2 res continue 
+     = res : convertToGridOfTrainingData (a:str) endChar endChar2
+
+convertToTrainingData :: String -> Char -> Char -> (([Double], String), Int, String)
+convertToTrainingData (a: rest) endChar endChar2 =
+    case reads (a:rest) of
+    [(x, rest)] -> do 
+        let ((res, classs), val, remainingStr) = convertToTrainingData (dropWhile (== endChar) rest) endChar endChar2
+        (((x : res), classs), val, remainingStr)
+    _           -> do 
+        (([], readUntilChar (a : rest) '\n'), 1, removeUntilChar rest '\n')
+
+
+splitData :: [([Double], String)] -> Int -> (Int, Double) -> ([([Double], String)], [([Double], String)])
+splitData inputData processingIndex (aI, aT)
+    | length(inputData) == (processingIndex + 1) = do 
+        let (rowData, className) = inputData !! processingIndex
+        if ((rowData !! aI) < aT)
+            then ([inputData !! processingIndex], [])
+            else ([], [inputData !! processingIndex])
+    | otherwise = do 
+        let (leftData, rightData) = splitData inputData (processingIndex + 1) (aI, aT)
+        let (rowData, className) = inputData !! processingIndex
+        if ((rowData !! aI) < aT)
+            then (inputData !! processingIndex : leftData, rightData)
+            else (leftData, inputData !! processingIndex : rightData)
+
 
 
 main :: IO ()
 main = do
     
-    contents <- readFile "a.txt"
+    contents <- readFile "tree.txt"
     let (tree, str) = (loadTreeString contents 0 0)
     printDecisionTree tree
 
-    contents <- readFile "b.txt"
+    contents <- readFile "clasifyData.txt"
     let grid = (convertToGridOfDoubles contents ',' '\n')
     printGrid grid
 
-    --let grid = ([4,5,6] : [[1, 2, 3]])
-    --printGrid grid
+    let result = decisionTree_clasifyAll tree grid 0
+
+    putStrLn (show result)
+
+    contents <- readFile "trainData.txt"
+    let trainingData = (convertToGridOfTrainingData contents ',' '\n')
+
+    printList(trainingData)
+
+    let (leftData, rightData) = splitData trainingData 0 (0, 1.2)
+    putStrLn "---------"
+    printList (leftData)
+    putStrLn "---------"
+    printList (rightData)
+    putStrLn "---------"
+
+    let grid = ([4,5,6] : [[1, 2, 3]])
+    printGrid grid
