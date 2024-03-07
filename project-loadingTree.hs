@@ -1,6 +1,7 @@
 
 import Data.List (sortBy)
 import Data.Ord (comparing)
+import System.Environment
 
 data DecisionTree attributeIndex attributeThreshold className 
     = EmptyTree
@@ -344,40 +345,81 @@ trainingDataSortFnc :: Int -> ([Double], String) -> ([Double], String) -> Orderi
 trainingDataSortFnc index1D (data1, className1) (data2, className2) = 
     compare (data1 !! index1D) (data2 !! index1D)
 
-main :: IO ()
-main = do
-    
-    contents <- readFile "tree.txt"
-    let (tree, str) = (loadTreeString contents 0 0)
-    printDecisionTree tree
 
-    contents <- readFile "clasifyData.txt"
-    let grid = (convertToGridOfDoubles contents ',' '\n')
-    printGrid grid
+task1 :: String -> String -> [String]
+task1 treeFileContent dataFileContent = do
+    let (tree, str) = (loadTreeString treeFileContent 0 0)
 
-    let result = decisionTree_clasifyAll tree grid 0;
+    let grid = (convertToGridOfDoubles dataFileContent ',' '\n')
 
-    putStrLn (show result)
+    let result = decisionTree_clasifyAll tree grid 0
+    result
 
-    contents <- readFile "trainData.txt"
-    let trainingData = (convertToGridOfTrainingData contents ',' '\n')
-
-    printList(trainingData)
-
-    let (leftData, rightData) = splitData trainingData 0 (0, 1.2)
-    putStrLn "---------"
-    printList (leftData)
-    putStrLn "---------"
-    printList (rightData)
-    putStrLn "---------"
-
-    let (leftBucket, rightBucket, classes) = initBuckets trainingData 0
-    print leftBucket
-    print rightBucket
-    print classes
+task2 :: String -> DecisionTree Int Double String
+task2 trainingDataFileContent = do 
+    let trainingData = (convertToGridOfTrainingData trainingDataFileContent ',' '\n')
 
     let learnedDecisionTree = learnDecisionTree trainingData
-    printDecisionTree learnedDecisionTree
+    learnedDecisionTree
 
-    let grid = ([4,5,6] : [[1, 2, 3]])
-    printGrid grid
+main :: IO ()
+main = do
+    (first: args) <- getArgs
+    case first of 
+        "-1"  -> do 
+            let argsLen = length(args)
+            if (argsLen < 2) 
+                then putStrLn "Chybi vstupni soubory!!!"
+                else do
+                    let fileDecisionTree = args !! 0
+                    let fileClasifyData = args !! 1
+                    fileDecisionTreeContents <- readFile fileDecisionTree
+                    fileClasifyDataContents <- readFile fileClasifyData
+                    let result = task1 fileDecisionTreeContents fileClasifyDataContents
+                    putStrLn (show result)
+        "-2" -> do 
+            let argsLen = length(args)
+            if (argsLen < 1) 
+                then putStrLn "Chybi vstupni soubor!!!"
+                else do 
+                    let fileTrainingData = args !! 0
+                    fileTrainingDataContents <- readFile fileTrainingData
+                    let learnedDecisionTree = task2 fileTrainingDataContents
+                    printDecisionTree learnedDecisionTree
+        _ -> do 
+            putStrLn("Usage: flp-fun -1 <soubor obsahujici strom> <soubor obsahujici nove data> | flp-fun -2 <soubor obsahujici trenovaci data>")
+
+    -- contents <- readFile "tree.txt"
+    -- let (tree, str) = (loadTreeString contents 0 0)
+    -- printDecisionTree tree
+
+    -- contents <- readFile "clasifyData.txt"
+    -- let grid = (convertToGridOfDoubles contents ',' '\n')
+    -- printGrid grid
+
+    -- let result = decisionTree_clasifyAll tree grid 0;
+
+    -- putStrLn (show result)
+
+    -- contents <- readFile "trainData.txt"
+    -- let trainingData = (convertToGridOfTrainingData contents ',' '\n')
+
+    -- printList(trainingData)
+
+    -- let (leftData, rightData) = splitData trainingData 0 (0, 1.2)
+    -- putStrLn "---------"
+    -- printList (leftData)
+    -- putStrLn "---------"
+    -- printList (rightData)
+    -- putStrLn "---------"
+
+    -- let (leftBucket, rightBucket, classes) = initBuckets trainingData 0
+    -- print leftBucket
+    -- print rightBucket
+    -- print classes
+
+    -- let learnedDecisionTree = learnDecisionTree trainingData
+    -- printDecisionTree learnedDecisionTree
+
+    -- let grid = ([4,5,6] : [[1, 2, 3]])
+    -- printGrid grid
