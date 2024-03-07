@@ -1,6 +1,5 @@
 
 import Data.List (sortBy)
-import Data.Ord (comparing)
 import System.Environment
 
 data DecisionTree attributeIndex attributeThreshold className 
@@ -21,19 +20,24 @@ printDecisionTree (Node index threshold left right) = do
 printDecisionTree (Leaf className) = putStrLn $ "Leaf: Class = " ++ show className
 
 
-printGrid :: [[Double]] -> IO ()
-printGrid [] = putStrLn ""  -- Pokud je pole prázdné, vypíšeme prázdný řádek
-printGrid (row:rows) = do   -- Výpis každého řádku pole
-  printRow row              -- Vypíšeme aktuální řádek
-  printGrid rows            -- Rekurzivně zavoláme printGrid pro zbytek pole
+-- printGrid :: [[Double]] -> IO ()
+-- printGrid [] = putStrLn ""  -- Pokud je pole prázdné, vypíšeme prázdný řádek
+-- printGrid (row:rows) = do   -- Výpis každého řádku pole
+--   printRow row              -- Vypíšeme aktuální řádek
+--   printGrid rows            -- Rekurzivně zavoláme printGrid pro zbytek pole
 
--- Funkce pro výpis řádku pole
-printRow :: [Double] -> IO ()
-printRow [] = putStrLn ""           -- Pokud je řádek prázdný, vypíšeme prázdný řádek
-printRow (x:xs) = do                -- Výpis každého prvku řádku
-  putStr (show x ++ " ")            -- Vypíšeme aktuální prvek s mezerou
-  printRow xs  
+-- -- Funkce pro výpis řádku pole
+-- printRow :: [Double] -> IO ()
+-- printRow [] = putStrLn ""           -- Pokud je řádek prázdný, vypíšeme prázdný řádek
+-- printRow (x:xs) = do                -- Výpis každého prvku řádku
+--   putStr (show x ++ " ")            -- Vypíšeme aktuální prvek s mezerou
+--   printRow xs  
 
+-- printList :: [([Double], String)] -> IO ()
+-- printList [] = putStrLn "Empty list"
+-- printList ((nums, str):rest) = do
+--   putStrLn $ show nums ++ ", " ++ str
+--   printList rest
 
 
 ------------------------------------------------
@@ -46,19 +50,19 @@ readUntilChar (begin:rest) a
     | otherwise = begin : readUntilChar rest a
 
 removeUntilChar :: String -> Char -> String
-removeUntilChar "" a = ""
+removeUntilChar "" _a = ""
 removeUntilChar (begin:rest) a
     | begin == a = (rest)
     | otherwise = removeUntilChar rest a
 
 convertToDouble :: String -> String -> Double
-convertToDouble str endString = case reads str of
-    [(x, endString)] -> x
+convertToDouble str _endString = case reads str of
+    [(x, _notRead)] -> x
     _         -> 0
 
 convertToInt :: String -> String -> Int
-convertToInt str endString = case reads str of
-    [(x, endString)] -> x
+convertToInt str _endString = case reads str of
+    [(x, _notRead)] -> x
     _         -> 0
 
 removeChars :: String -> Int -> String
@@ -81,7 +85,8 @@ loadTreeString str 0 removeSpaceCopy
         (Node attributeIndex attributeThreshold (left) (right), remainingStr2)
     | beginsWithLeaf str = (Leaf (readUntilChar (removeChars str 6) '\n'), (removeUntilChar str '\n'))
     | otherwise = (EmptyTree, str)
-loadTreeString (b:rest) a removeSpaceCopy = loadTreeString rest (a - 1) removeSpaceCopy
+loadTreeString (_b:rest) a removeSpaceCopy = loadTreeString rest (a - 1) removeSpaceCopy
+loadTreeString "" _index _removeSpaceCopy = (EmptyTree, "")
 
 beginsWithNode :: String -> Bool
 beginsWithNode str = (length str >= 6) && str !! 0 == 'N' && str !! 1 == 'o' && str !! 2 == 'd' && str !! 3 == 'e' && str !! 4 == ':' && str !! 5 == ' '
@@ -114,8 +119,8 @@ decisionTree_clasifyAllHelper tree inputMatrix processingIndex
     = (decisionTree_clasify tree (inputMatrix !! processingIndex)) : (decisionTree_clasifyAll tree inputMatrix (processingIndex + 1))
 
 decisionTree_clasify :: DecisionTree Int Double String -> [Double] -> String
-decisionTree_clasify (Leaf className) arr = className
-decisionTree_clasify EmptyTree arr = ""
+decisionTree_clasify (Leaf className) _arr = className
+decisionTree_clasify EmptyTree _arr = ""
 decisionTree_clasify (Node aI aT (left) (right)) arr 
     | (arr !! aI) > aT = decisionTree_clasify right arr
     | otherwise = decisionTree_clasify left arr
@@ -149,8 +154,8 @@ convertToDoubles (a: rest) endChar endChar2
     | a == endChar2 = do
         ([], 1, (rest))
     | otherwise = case reads (a:rest) of
-    [(x, rest)] -> do 
-        let (res, val, remainingStr) = convertToDoubles (dropWhile (== endChar) rest) endChar endChar2
+    [(x, notRead)] -> do 
+        let (res, val, remainingStr) = convertToDoubles (dropWhile (== endChar) notRead) endChar endChar2
         ((x : res), val, remainingStr)
     _           -> do 
         let (res, val, remainingStr) = convertToDoubles "" endChar endChar2
@@ -164,44 +169,37 @@ convertToDoubles (a: rest) endChar endChar2
 -----------------------------------------------------------------------------------------------------------
 
 
-printList :: [([Double], String)] -> IO ()
-printList [] = putStrLn "Empty list"
-printList ((nums, str):rest) = do
-  putStrLn $ show nums ++ ", " ++ str
-  printList rest
-
-
 convertToGridOfTrainingData :: String -> Char -> Char -> [([Double], String)]
 convertToGridOfTrainingData (a: rest) endChar endChar2 = do
-    let ((row, classs), continue, remainingStr) = convertToTrainingData (a : rest) endChar endChar2
-    convertToGridOfTrainingDataContinue remainingStr endChar endChar2 (row, classs) continue
+    let ((row, classs), remainingStr) = convertToTrainingData (a : rest) endChar endChar2
+    convertToGridOfTrainingDataContinue remainingStr endChar endChar2 (row, classs)
+convertToGridOfTrainingData [] _endChar _endChar2 = []
 
-
-convertToGridOfTrainingDataContinue :: String -> Char -> Char -> ([Double], String) -> Int -> [([Double], String)]
-convertToGridOfTrainingDataContinue "" endChar endChar2 res continue = [res]
-convertToGridOfTrainingDataContinue (a : str) endChar endChar2 res continue 
+convertToGridOfTrainingDataContinue :: String -> Char -> Char -> ([Double], String) -> [([Double], String)]
+convertToGridOfTrainingDataContinue "" _endChar _endChar2 res = [res]
+convertToGridOfTrainingDataContinue (a : str) endChar endChar2 res
      = res : convertToGridOfTrainingData (a:str) endChar endChar2
 
-convertToTrainingData :: String -> Char -> Char -> (([Double], String), Int, String)
+convertToTrainingData :: String -> Char -> Char -> (([Double], String), String)
 convertToTrainingData (a: rest) endChar endChar2 =
     case reads (a:rest) of
-    [(x, rest)] -> do 
-        let ((res, classs), val, remainingStr) = convertToTrainingData (dropWhile (== endChar) rest) endChar endChar2
-        (((x : res), classs), val, remainingStr)
+    [(x, notRead)] -> do 
+        let ((res, classs), remainingStr) = convertToTrainingData (dropWhile (== endChar) notRead) endChar endChar2
+        (((x : res), classs), remainingStr)
     _           -> do 
-        (([], readUntilChar (a : rest) '\n'), 1, removeUntilChar rest '\n')
-
+        (([], readUntilChar (a : rest) '\n'), removeUntilChar rest '\n')
+convertToTrainingData [] _endChar _endChar2 = (([], ""), "")
 
 splitData :: [([Double], String)] -> Int -> (Int, Double) -> ([([Double], String)], [([Double], String)])
 splitData inputData processingIndex (aI, aT)
     | length(inputData) == (processingIndex + 1) = do 
-        let (rowData, className) = inputData !! processingIndex
+        let (rowData, _className) = inputData !! processingIndex
         if ((rowData !! aI) <= aT)
             then ([inputData !! processingIndex], [])
             else ([], [inputData !! processingIndex])
     | otherwise = do 
         let (leftData, rightData) = splitData inputData (processingIndex + 1) (aI, aT)
-        let (rowData, className) = inputData !! processingIndex
+        let (rowData, _className) = inputData !! processingIndex
         if ((rowData !! aI) <= aT)
             then (inputData !! processingIndex : leftData, rightData)
             else (leftData, inputData !! processingIndex : rightData)
@@ -218,7 +216,7 @@ findIndexOf :: [String] -> String -> Int
 findIndexOf array findItem = findIndexOfHelper array findItem 0
 
 findIndexOfHelper :: [String] -> String -> Int -> Int
-findIndexOfHelper [] findItem _ = -1
+findIndexOfHelper [] _findItem _ = -1
 findIndexOfHelper (firstItem:arrayRest) findItem position 
     | firstItem == findItem = position
     | otherwise = findIndexOfHelper arrayRest findItem (position + 1) 
@@ -232,6 +230,8 @@ setValueAt :: [Int] -> Int -> Int -> [Int]
 setValueAt (firstItem : arrayRest) value pos 
     | pos == 0 = value : arrayRest
     | otherwise = firstItem : setValueAt arrayRest value (pos - 1)
+setValueAt [] _value _pos = []
+
 
 initBuckets :: [([Double], String)] -> Int -> ([Int], [Int], [String])
 initBuckets [] _ = ([], [], [])
@@ -239,7 +239,7 @@ initBuckets inputData processingIndex
     | length(inputData) <= (processingIndex) = ([], [], [])
     | otherwise = do 
     let (leftBucket, rightBucket, classes) = initBuckets inputData (processingIndex + 1)
-    let (inputDataRow, className) = inputData !! processingIndex
+    let (_inputDataRow, className) = inputData !! processingIndex
     let oldClassesLen = length(classes)
     let newClasses = addToUniqArray classes className
     let newClassesLen = length(newClasses)
@@ -260,7 +260,7 @@ giniScore :: [Int] -> Int -> Double
 giniScore bucket classID = do 
     let sumInBucket = fromIntegral (sum bucket) :: Double
     let classCount = fromIntegral (bucket !! classID) :: Double
-    1.0 - ((classCount / sumInBucket) ^ 2)
+    1.0 - ((classCount / sumInBucket) ** 2)
 
 calcGini :: ([Int], Double) -> ([Int], Double) -> Int -> Double
 calcGini (leftBucket, giniLeft) (rightBucket, giniRight) inputDataLen = do 
@@ -272,15 +272,15 @@ calcGini (leftBucket, giniLeft) (rightBucket, giniRight) inputDataLen = do
 
 learnDecisionTree :: [([Double], String)] -> DecisionTree Int Double String 
 learnDecisionTree [] = EmptyTree
-learnDecisionTree (([], ""):rest) = EmptyTree
+learnDecisionTree (([], ""): _rest) = EmptyTree
 learnDecisionTree inputData = do 
     let (leftBucket, rightBucket, classes) = initBuckets inputData 0
     if ((length(classes)) == 1)
         then Leaf (classes !! 0)
         else do
-            let (firstRow, firstClassName) = inputData !! 0
+            let (firstRow, _firstClassName) = inputData !! 0
             let attributesCount = length(firstRow)
-            let (bestGini, bestAttributeIndex, bestAttributeThreshold) = _learnDecisionTreeProcessAttribute inputData 0 attributesCount (leftBucket, rightBucket, classes) (1.0, -1, 0.0)
+            let (_bestGini, bestAttributeIndex, bestAttributeThreshold) = _learnDecisionTreeProcessAttribute inputData 0 attributesCount (leftBucket, rightBucket, classes) (1.0, -1, 0.0)
             let (dataLeft, dataRight) = splitData inputData 0 (bestAttributeIndex, bestAttributeThreshold)
         
             Node bestAttributeIndex bestAttributeThreshold (learnDecisionTree dataLeft) (learnDecisionTree dataRight)
@@ -329,7 +329,7 @@ _learnDecisionTree inputData processingIndex (leftBucket, rightBucket, classes) 
         let giniLeft = giniScore newLeftBucket classIndex
         let giniRight = giniScore newRightBucket classIndex
         let newGini = calcGini (newLeftBucket, giniLeft) (newRightBucket, giniRight) (length(inputData))
-        let (prevRow, prevClassName) = inputData !! (processingIndex - 1)
+        let (prevRow, _prevClassName) = inputData !! (processingIndex - 1)
         if((row !! attributeIndex) == (prevRow !! attributeIndex))
             then _learnDecisionTree inputData (processingIndex + 1) (leftBucket, rightBucket, classes) attributeIndex (bestGini, bestAttributeIndex, bestAttributeThreshold)
             else do
@@ -342,13 +342,13 @@ _learnDecisionTree inputData processingIndex (leftBucket, rightBucket, classes) 
 
 
 trainingDataSortFnc :: Int -> ([Double], String) -> ([Double], String) -> Ordering
-trainingDataSortFnc index1D (data1, className1) (data2, className2) = 
+trainingDataSortFnc index1D (data1, _className1) (data2, _className2) = 
     compare (data1 !! index1D) (data2 !! index1D)
 
 
 task1 :: String -> String -> [String]
 task1 treeFileContent dataFileContent = do
-    let (tree, str) = (loadTreeString treeFileContent 0 0)
+    let (tree, _str) = (loadTreeString treeFileContent 0 0)
 
     let grid = (convertToGridOfDoubles dataFileContent ',' '\n')
 
@@ -389,37 +389,3 @@ main = do
         _ -> do 
             putStrLn("Usage: flp-fun -1 <soubor obsahujici strom> <soubor obsahujici nove data> | flp-fun -2 <soubor obsahujici trenovaci data>")
 
-    -- contents <- readFile "tree.txt"
-    -- let (tree, str) = (loadTreeString contents 0 0)
-    -- printDecisionTree tree
-
-    -- contents <- readFile "clasifyData.txt"
-    -- let grid = (convertToGridOfDoubles contents ',' '\n')
-    -- printGrid grid
-
-    -- let result = decisionTree_clasifyAll tree grid 0;
-
-    -- putStrLn (show result)
-
-    -- contents <- readFile "trainData.txt"
-    -- let trainingData = (convertToGridOfTrainingData contents ',' '\n')
-
-    -- printList(trainingData)
-
-    -- let (leftData, rightData) = splitData trainingData 0 (0, 1.2)
-    -- putStrLn "---------"
-    -- printList (leftData)
-    -- putStrLn "---------"
-    -- printList (rightData)
-    -- putStrLn "---------"
-
-    -- let (leftBucket, rightBucket, classes) = initBuckets trainingData 0
-    -- print leftBucket
-    -- print rightBucket
-    -- print classes
-
-    -- let learnedDecisionTree = learnDecisionTree trainingData
-    -- printDecisionTree learnedDecisionTree
-
-    -- let grid = ([4,5,6] : [[1, 2, 3]])
-    -- printGrid grid
