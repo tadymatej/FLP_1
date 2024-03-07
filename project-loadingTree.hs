@@ -8,38 +8,6 @@ data DecisionTree attributeIndex attributeThreshold className
     | Leaf className
     deriving (Show)
 
-
-printDecisionTree :: (Show attributeIndex, Show attributeThreshold, Show className) => DecisionTree attributeIndex attributeThreshold className -> IO ()
-printDecisionTree EmptyTree = putStrLn "Empty tree"
-printDecisionTree (Node index threshold left right) = do
-    putStrLn $ "Node: Index = " ++ show index ++ ", Threshold = " ++ show threshold
-    putStrLn "Left subtree:"
-    printDecisionTree left
-    putStrLn "Right subtree:"
-    printDecisionTree right
-printDecisionTree (Leaf className) = putStrLn $ "Leaf: Class = " ++ show className
-
-
--- printGrid :: [[Double]] -> IO ()
--- printGrid [] = putStrLn ""  -- Pokud je pole prázdné, vypíšeme prázdný řádek
--- printGrid (row:rows) = do   -- Výpis každého řádku pole
---   printRow row              -- Vypíšeme aktuální řádek
---   printGrid rows            -- Rekurzivně zavoláme printGrid pro zbytek pole
-
--- -- Funkce pro výpis řádku pole
--- printRow :: [Double] -> IO ()
--- printRow [] = putStrLn ""           -- Pokud je řádek prázdný, vypíšeme prázdný řádek
--- printRow (x:xs) = do                -- Výpis každého prvku řádku
---   putStr (show x ++ " ")            -- Vypíšeme aktuální prvek s mezerou
---   printRow xs  
-
--- printList :: [([Double], String)] -> IO ()
--- printList [] = putStrLn "Empty list"
--- printList ((nums, str):rest) = do
---   putStrLn $ show nums ++ ", " ++ str
---   printList rest
-
-
 ------------------------------------------------
 --- Start of loading tree ------
 
@@ -355,12 +323,27 @@ task1 treeFileContent dataFileContent = do
     let result = decisionTree_clasifyAll tree grid 0
     result
 
+task1Print :: [String] -> IO()
+task1Print [] = putStr("")
+task1Print (item: []) = putStrLn(item)
+task1Print (item : rest) = do 
+    putStrLn(item) 
+    task1Print rest
+
 task2 :: String -> DecisionTree Int Double String
 task2 trainingDataFileContent = do 
     let trainingData = (convertToGridOfTrainingData trainingDataFileContent ',' '\n')
 
     let learnedDecisionTree = learnDecisionTree trainingData
     learnedDecisionTree
+
+task2Print :: DecisionTree Int Double String -> String -> IO()
+task2Print EmptyTree _indentStr = putStrLn("")
+task2Print (Leaf className) indentStr = putStrLn(indentStr ++ "Leaf: " ++ className)
+task2Print (Node attributeIndex attributeThreshold (left) (right)) indentStr = do 
+    putStrLn(indentStr ++ "Node: " ++ (show attributeIndex) ++ ", " ++ (show attributeThreshold))
+    task2Print left (indentStr ++ "  ")
+    task2Print right (indentStr ++ "  ")
 
 main :: IO ()
 main = do
@@ -376,7 +359,7 @@ main = do
                     fileDecisionTreeContents <- readFile fileDecisionTree
                     fileClasifyDataContents <- readFile fileClasifyData
                     let result = task1 fileDecisionTreeContents fileClasifyDataContents
-                    putStrLn (show result)
+                    task1Print result
         "-2" -> do 
             let argsLen = length(args)
             if (argsLen < 1) 
@@ -385,7 +368,7 @@ main = do
                     let fileTrainingData = args !! 0
                     fileTrainingDataContents <- readFile fileTrainingData
                     let learnedDecisionTree = task2 fileTrainingDataContents
-                    printDecisionTree learnedDecisionTree
+                    task2Print learnedDecisionTree ""
         _ -> do 
             putStrLn("Usage: flp-fun -1 <soubor obsahujici strom> <soubor obsahujici nove data> | flp-fun -2 <soubor obsahujici trenovaci data>")
 
