@@ -1,0 +1,403 @@
+File found at Makefile
+File found at flp-fun.hs
+File found at flp-fun
+Test #1
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 82 (82.0%)
+----------
+Test #2
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 67 (67.0%)
+----------
+Test #3
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 79 (79.0%)
+----------
+Test #4
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 64 (64.0%)
+----------
+Test #5
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 80 (80.0%)
+----------
+Test #6
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 70 (70.0%)
+----------
+Test #7
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 43 (43.0%)
+----------
+Test #8
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 24 (24.0%)
+----------
+Test #9
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 53 (53.0%)
+----------
+Test #10
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 63 (63.0%)
+----------
+Test #11
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 68 (68.0%)
+----------
+Test #12
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 76 (76.0%)
+----------
+Test #13
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 74 (74.0%)
+----------
+Test #14
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 77 (77.0%)
+----------
+Test #15
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 67 (67.0%)
+----------
+Test #16
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 22 (22.0%)
+----------
+Test #17
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 77 (77.0%)
+----------
+Test #18
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 29 (28.999999999999996%)
+----------
+Test #19
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 62 (62.0%)
+----------
+Test #20
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 72 (72.0%)
+----------
+Test #21
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 69 (69.0%)
+----------
+Test #22
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 81 (81.0%)
+----------
+Test #23
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 65 (65.0%)
+----------
+Test #24
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 72 (72.0%)
+----------
+Test #25
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 57 (56.99999999999999%)
+----------
+Test #26
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 73 (73.0%)
+----------
+Test #27
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 57 (56.99999999999999%)
+----------
+Test #28
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 59 (59.0%)
+----------
+Test #29
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 71 (71.0%)
+----------
+Test #30
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 72 (72.0%)
+----------
+Test #31
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 76 (76.0%)
+----------
+Test #32
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 65 (65.0%)
+----------
+Test #33
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 76 (76.0%)
+----------
+Test #34
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 75 (75.0%)
+----------
+Test #35
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 66 (66.0%)
+----------
+Test #36
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 71 (71.0%)
+----------
+Test #37
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 69 (69.0%)
+----------
+Test #38
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 55 (55.00000000000001%)
+----------
+Test #39
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 79 (79.0%)
+----------
+Test #40
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 81 (81.0%)
+----------
+Test #41
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 67 (67.0%)
+----------
+Test #42
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 71 (71.0%)
+----------
+Test #43
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 74 (74.0%)
+----------
+Test #44
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 77 (77.0%)
+----------
+Test #45
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 81 (81.0%)
+----------
+Test #46
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 34 (34.0%)
+----------
+Test #47
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 72 (72.0%)
+----------
+Test #48
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 78 (78.0%)
+----------
+Test #49
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 65 (65.0%)
+----------
+Test #50
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 70 (70.0%)
+----------
+Test #51
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 44 (44.0%)
+----------
+Test #52
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 70 (70.0%)
+----------
+Test #53
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 75 (75.0%)
+----------
+Test #54
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 77 (77.0%)
+----------
+Test #55
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 61 (61.0%)
+----------
+Test #56
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 66 (66.0%)
+----------
+Test #57
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 67 (67.0%)
+----------
+Test #58
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 72 (72.0%)
+----------
+Test #59
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 76 (76.0%)
+----------
+Test #60
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 46 (46.0%)
+----------
+Test #61
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 82 (82.0%)
+----------
+Test #62
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 45 (45.0%)
+----------
+Test #63
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 53 (53.0%)
+----------
+Test #64
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 76 (76.0%)
+----------
+Test #65
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 76 (76.0%)
+----------
+Test #66
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 73 (73.0%)
+----------
+Test #67
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 77 (77.0%)
+----------
+Test #68
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 75 (75.0%)
+----------
+Test #69
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 56 (56.00000000000001%)
+----------
+Test #70
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 85 (85.0%)
+----------
+Test #71
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 44 (44.0%)
+----------
+Test #72
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 75 (75.0%)
+----------
+Test #73
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 79 (79.0%)
+----------
+Test #74
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 70 (70.0%)
+----------
+Test #75
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 7 (7.000000000000001%)
+----------
+Test #76
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 77 (77.0%)
+----------
+Test #77
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 83 (83.0%)
+----------
+Test #78
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 67 (67.0%)
+----------
+Test #79
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 77 (77.0%)
+----------
+Test #80
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 76 (76.0%)
+----------
+Test #81
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 65 (65.0%)
+----------
+Test #82
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 47 (47.0%)
+----------
+Test #83
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 61 (61.0%)
+----------
+Test #84
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 69 (69.0%)
+----------
+Test #85
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 71 (71.0%)
+----------
+Test #86
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 75 (75.0%)
+----------
+Test #87
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 74 (74.0%)
+----------
+Test #88
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 65 (65.0%)
+----------
+Test #89
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 69 (69.0%)
+----------
+Test #90
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 80 (80.0%)
+----------
+Test #91
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 69 (69.0%)
+----------
+Test #92
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 74 (74.0%)
+----------
+Test #93
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 68 (68.0%)
+----------
+Test #94
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 76 (76.0%)
+----------
+Test #95
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 82 (82.0%)
+----------
+Test #96
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 71 (71.0%)
+----------
+Test #97
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 55 (55.00000000000001%)
+----------
+Test #98
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 60 (60.0%)
+----------
+Test #99
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 71 (71.0%)
+----------
+Test #100
+Task 1:[ OK ] - correctly classified all data
+Task 2:incorrect: 79 (79.0%)
+----------

@@ -1,0 +1,13 @@
+Node: 0, 900.075
+  Node: 2, 692.485
+    Node: 5, 752.44
+      Leaf: Class6
+      Node: 0, 317.54
+        Leaf: Class7
+        Node: 0, 477.575
+          Leaf: Class5
+          Leaf: Class3
+    Leaf: Class9
+  Node: 1, 299.205
+    Leaf: Class3
+    Leaf: Class2
