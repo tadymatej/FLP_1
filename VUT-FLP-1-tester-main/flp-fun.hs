@@ -1,361 +1,325 @@
-
-import Data.List (sortBy, maximumBy)
-import System.Environment
-import Data.Ord (comparing)
-
-data DecisionTree attributeIndex attributeThreshold className 
-    = EmptyTree
-    | Node attributeIndex attributeThreshold (DecisionTree attributeIndex attributeThreshold className ) (DecisionTree attributeIndex attributeThreshold className )
-    | Leaf className
-    deriving (Show)
-
-------------------------------------------------
---- Start of loading tree ------
-
-readUntilChar :: String -> Char -> String
-readUntilChar "" _ = ""
-readUntilChar (begin:rest) a 
-    | begin == a = []
-    | otherwise = begin : readUntilChar rest a
-
-removeUntilChar :: String -> Char -> String
-removeUntilChar "" _a = ""
-removeUntilChar (begin:rest) a
-    | begin == a = (rest)
-    | otherwise = removeUntilChar rest a
-
-convertToDouble :: String -> String -> Double
-convertToDouble str _endString = case reads str of
-    [(x, _notRead)] -> x
-    _         -> 0
-
-convertToInt :: String -> String -> Int
-convertToInt str _endString = case reads str of
-    [(x, _notRead)] -> x
-    _         -> 0
-
-removeChars :: String -> Int -> String
-removeChars str 0 = str 
-removeChars [] _ = []
-removeChars (_:rest) removeCount = removeChars rest (removeCount - 1)
-
-
-loadTreeString :: String -> Int -> Int -> (DecisionTree Int Double String, String)
--- everything skipped, now process it!!
-loadTreeString str 0 removeSpaceCopy
-    | beginsWithNode str = do 
-        let str2 = drop 5 str
-        let attributeIndex = convertToInt str2 ","
-        let str3 = removeUntilChar str2 ','
-        let attributeThreshold = convertToDouble str3 "\n"
-        let str4 = removeUntilChar str3 '\n'
-        let (left, remainingStr) = loadTreeString str4 (removeSpaceCopy + 2) (removeSpaceCopy + 2)
-        let (right, remainingStr2) = loadTreeString remainingStr (removeSpaceCopy + 2) (removeSpaceCopy + 2)
-        (Node attributeIndex attributeThreshold (left) (right), remainingStr2)
-    | beginsWithLeaf str = (Leaf (readUntilChar (removeChars str 6) '\n'), (removeUntilChar str '\n'))
-    | otherwise = (EmptyTree, str)
-loadTreeString (_b:rest) a removeSpaceCopy = loadTreeString rest (a - 1) removeSpaceCopy
-loadTreeString "" _index _removeSpaceCopy = (EmptyTree, "")
-
-beginsWithNode :: String -> Bool
-beginsWithNode str = (length str >= 6) && str !! 0 == 'N' && str !! 1 == 'o' && str !! 2 == 'd' && str !! 3 == 'e' && str !! 4 == ':' && str !! 5 == ' '
-
-beginsWithLeaf :: String -> Bool
-beginsWithLeaf str = (length str >= 6) && str !! 0 == 'L' && str !! 1 == 'e' && str !! 2 == 'a' && str !! 3 == 'f' && str !! 4 == ':' && str !! 5 == ' '
-
-
-
---- End of loading tree ------
----------------------------------------------
-
-
-
-
-
-----------------------------------------------
----- Start of clasifying ----------
-
-decisionTree_clasifyAll :: DecisionTree Int Double String -> [[Double]] -> Int -> [String]
-decisionTree_clasifyAll EmptyTree _ _ = []
-decisionTree_clasifyAll _ [[]] _ = []
---decisionTree_clasifyAll (Leaf className) _ _ = [className]
-decisionTree_clasifyAll tree inputMatrix processingIndex 
-    | length(inputMatrix) <= processingIndex = []
-    | (inputMatrix !! processingIndex) == [] = []
-    | otherwise = decisionTree_clasifyAllHelper tree inputMatrix processingIndex
-
-decisionTree_clasifyAllHelper :: DecisionTree Int Double String -> [[Double]] -> Int -> [String]
-decisionTree_clasifyAllHelper tree inputMatrix processingIndex
-    = (decisionTree_clasify tree (inputMatrix !! processingIndex)) : (decisionTree_clasifyAll tree inputMatrix (processingIndex + 1))
-
-decisionTree_clasify :: DecisionTree Int Double String -> [Double] -> String
-decisionTree_clasify (Leaf className) _arr = className
-decisionTree_clasify EmptyTree _arr = ""
-decisionTree_clasify (Node aI aT (left) (right)) arr 
-    | (arr !! aI) <= aT = decisionTree_clasify left arr
-    | otherwise = decisionTree_clasify right arr
-
-
--------- End of clasifying ---------
------------------------------------------------
-
-
-
-
-
-------- Start of data reading ----------
-----------------------------------------
-
-convertToGridOfDoubles :: String -> Char -> Char -> [[Double]]
-convertToGridOfDoubles "" _ _ = [[]]
-convertToGridOfDoubles (a: rest) endChar endChar2 = do
-    let (row, continue, remainingStr) = convertToDoubles (a : rest) endChar endChar2
-    convertToGridOfDoublesContinue remainingStr endChar endChar2 row continue
-
-
-convertToGridOfDoublesContinue :: String -> Char -> Char -> [Double] -> Int -> [[Double]]
-convertToGridOfDoublesContinue str endChar endChar2 res continue 
-    | continue == 1 = res : convertToGridOfDoubles str endChar endChar2
-    | otherwise = [res]
-
-convertToDoubles :: String -> Char -> Char -> ([Double], Int, String)
-convertToDoubles "" _ _ = ([], 0, "")
-convertToDoubles (a: rest) endChar endChar2 
-    | a == endChar2 = do
-        ([], 1, (rest))
-    | otherwise = case reads (a:rest) of
-    [(x, notRead)] -> do 
-        let (res, val, remainingStr) = convertToDoubles (dropWhile (== endChar) notRead) endChar endChar2
-        ((x : res), val, remainingStr)
-    _           -> do 
-        let (res, val, remainingStr) = convertToDoubles "" endChar endChar2
-        ((0 : res), val, remainingStr)
-
----------- End of data reading -----------
------------------------------------------
-
------------------------------------------------------------------------------------------------------------
-------------------------------------- TASK 2 - Training of decision tree ----------------------------------
------------------------------------------------------------------------------------------------------------
-
-
-convertToGridOfTrainingData :: String -> Char -> Char -> [([Double], String)]
-convertToGridOfTrainingData (a: rest) endChar endChar2 = do
-    let ((row, classs), remainingStr) = convertToTrainingData (a : rest) endChar endChar2
-    convertToGridOfTrainingDataContinue remainingStr endChar endChar2 (row, classs)
-convertToGridOfTrainingData [] _endChar _endChar2 = []
-
-convertToGridOfTrainingDataContinue :: String -> Char -> Char -> ([Double], String) -> [([Double], String)]
-convertToGridOfTrainingDataContinue "" _endChar _endChar2 res = [res]
-convertToGridOfTrainingDataContinue (a : str) endChar endChar2 res
-     = res : convertToGridOfTrainingData (a:str) endChar endChar2
-
-convertToTrainingData :: String -> Char -> Char -> (([Double], String), String)
-convertToTrainingData (a: rest) endChar endChar2 =
-    case reads (a:rest) of
-    [(x, notRead)] -> do 
-        let ((res, classs), remainingStr) = convertToTrainingData (dropWhile (== endChar) notRead) endChar endChar2
-        (((x : res), classs), remainingStr)
-    _           -> do 
-        (([], readUntilChar (a : rest) '\n'), removeUntilChar rest '\n')
-convertToTrainingData [] _endChar _endChar2 = (([], ""), "")
-
-splitData :: [([Double], String)] -> Int -> (Int, Double) -> ([([Double], String)], [([Double], String)])
-splitData inputData processingIndex (aI, aT)
-    | length(inputData) == (processingIndex + 1) = do 
-        let (rowData, _className) = inputData !! processingIndex
-        if ((rowData !! aI) <= aT)
-            then ([inputData !! processingIndex], [])
-            else ([], [inputData !! processingIndex])
-    | otherwise = do 
-        let (leftData, rightData) = splitData inputData (processingIndex + 1) (aI, aT)
-        let (rowData, _className) = inputData !! processingIndex
-        if ((rowData !! aI) <= aT)
-            then ((inputData !! processingIndex) : leftData, rightData)
-            else (leftData, (inputData !! processingIndex) : rightData)
-
------------------------- Learning decision tree ----------------------------
-
-addToUniqArray :: [String] -> String -> [String]
-addToUniqArray [] item = [item]
-addToUniqArray (firstArrayItem:arrayRest) item 
-    | firstArrayItem == item = (firstArrayItem:arrayRest)
-    | otherwise = firstArrayItem : addToUniqArray arrayRest item
-
-findIndexOf :: [String] -> String -> Int 
-findIndexOf array findItem = findIndexOfHelper array findItem 0
-
-findIndexOfHelper :: [String] -> String -> Int -> Int
-findIndexOfHelper [] _findItem _ = -1
-findIndexOfHelper (firstItem:arrayRest) findItem position 
-    | firstItem == findItem = position
-    | otherwise = findIndexOfHelper arrayRest findItem (position + 1) 
-
-
-arrayPush :: [Int] -> Int -> [Int]
-arrayPush [] item = [item]
-arrayPush (firstItem:arrayRest) item = firstItem : arrayPush arrayRest item
-
-setValueAt :: [Int] -> Int -> Int -> [Int]
-setValueAt (firstItem : arrayRest) value pos 
-    | pos == 0 = value : arrayRest
-    | otherwise = firstItem : setValueAt arrayRest value (pos - 1)
-setValueAt [] _value _pos = []
-
-
-initBuckets :: [([Double], String)] -> Int -> ([Int], [Int], [String])
-initBuckets [] _ = ([], [], [])
-initBuckets inputData processingIndex
-    | length(inputData) <= (processingIndex) = ([], [], [])
-    | otherwise = do 
-    let (leftBucket, rightBucket, classes) = initBuckets inputData (processingIndex + 1)
-    let (_inputDataRow, className) = inputData !! processingIndex
-    let oldClassesLen = length(classes)
-    let newClasses = addToUniqArray classes className
-    let newClassesLen = length(newClasses)
-    if(newClassesLen == oldClassesLen)
-        then do 
-            let classIndex = findIndexOf newClasses className
-            let rightBucketNewValue = ((rightBucket !! classIndex) + 1)
-            let rightBucketNew = setValueAt rightBucket rightBucketNewValue classIndex
-            (leftBucket, rightBucketNew, newClasses)
-        else do 
-            let leftBucketNew = arrayPush leftBucket 0
-            let rightBucketNew = arrayPush rightBucket 1
-            (leftBucketNew, rightBucketNew, newClasses)
-    
-
-
-giniScore :: [Int] -> Int -> Double
-giniScore bucket classID = do 
-    let sumInBucket = fromIntegral (sum bucket) :: Double
-    let classCount = fromIntegral (bucket !! classID) :: Double
-    1.0 - ((classCount / sumInBucket) ** 2)
-
-calcGini :: ([Int], Double) -> ([Int], Double) -> Double
-calcGini (leftBucket, giniLeft) (rightBucket, giniRight) = do 
-    let sumLeftBucketDouble = fromIntegral (sum leftBucket) :: Double
-    let sumRightBucketDouble = fromIntegral (sum rightBucket) :: Double
-    let inputDataLen = fromIntegral ((length leftBucket) + (length rightBucket))
-    let inputDataLen = 10
-    (((sumLeftBucketDouble * giniLeft) + (sumRightBucketDouble * giniRight)) / inputDataLen)
-
-findMaxIndex :: Ord a => [a] -> Int
-findMaxIndex [] = -1
-findMaxIndex xs = snd $ maximumBy (comparing fst) (zip xs [0..])
-
-learnDecisionTree :: [([Double], String)] -> Int -> DecisionTree Int Double String 
-learnDecisionTree [] _ = Leaf "aa"
-learnDecisionTree (([], ""): _rest) _ = EmptyTree
--- learnDecisionTree inputData 0 = do 
---     let (leftBucket, rightBucket, classes) = initBuckets inputData 0
---     let maxIndex = findMaxIndex rightBucket
---     Leaf (classes !! maxIndex)
-learnDecisionTree inputData maxDepth = do 
-    let (leftBucket, rightBucket, classes) = initBuckets inputData 0
-
-    let (firstRow, _firstClassName) = inputData !! 0
-    let attributesCount = length(firstRow)
-    let (bestGini, bestAttributeIndex, bestAttributeThreshold) = _learnDecisionTreeProcessAttribute inputData 0 attributesCount (leftBucket, rightBucket, classes) (10.0, 0, 0.0)
-    if(bestGini <= 0.2) 
-        then do
-            let maxIndex = findMaxIndex rightBucket
-            Leaf (classes !! maxIndex)
-        else do
-            let (dataLeft, dataRight) = splitData inputData 0 (bestAttributeIndex, bestAttributeThreshold)
-            if dataRight == [] then do
-                let maxIndex = findMaxIndex rightBucket
-                Leaf (classes !! maxIndex)
-            else do
-                Node bestAttributeIndex bestAttributeThreshold (learnDecisionTree dataLeft (maxDepth - 1)) (learnDecisionTree dataRight (maxDepth - 1))
-
-
-_learnDecisionTreeProcessAttribute :: [([Double], String)] -> Int -> Int -> ([Int], [Int], [String]) -> (Double, Int, Double) -> (Double, Int, Double)
-_learnDecisionTreeProcessAttribute inputData processingAttributeIndex attributesCount (leftBucket, rightBucket, classes) (bestGini, bestAttributeIndex, bestAttributeThreshold)
-    | processingAttributeIndex >= attributesCount = (bestGini, bestAttributeIndex, bestAttributeThreshold)
-    | otherwise = do
-        let sortedTrainingData = sortBy (trainingDataSortFnc processingAttributeIndex) inputData
-        let (newBestGini, newBestAttributeIndex, newBestAttributeThreshold) = _learnDecisionTree sortedTrainingData 0 (leftBucket, rightBucket, classes) processingAttributeIndex (bestGini, bestAttributeIndex, bestAttributeThreshold)
-        if (newBestGini < bestGini)
-              then _learnDecisionTreeProcessAttribute inputData (processingAttributeIndex + 1) attributesCount (leftBucket, rightBucket, classes) (newBestGini, newBestAttributeIndex, newBestAttributeThreshold)
-              else _learnDecisionTreeProcessAttribute inputData (processingAttributeIndex + 1) attributesCount (leftBucket, rightBucket, classes) (bestGini, bestAttributeIndex, bestAttributeThreshold)
-
-
-_learnDecisionTree :: [([Double], String)] -> Int -> ([Int], [Int], [String]) -> Int -> (Double, Int, Double) -> (Double, Int, Double)
-_learnDecisionTree inputData processingIndex (leftBucket, rightBucket, classes) attributeIndex (bestGini, bestAttributeIndex, bestAttributeThreshold)
-    | (length(inputData)) <= processingIndex =  (bestGini, bestAttributeIndex, bestAttributeThreshold)
-    | processingIndex == 0 = do
-        let (row, className) = inputData !! processingIndex
-        let classIndex = findIndexOf classes className
-
-        let giniRight = giniScore rightBucket classIndex
-        let newGini = giniRight
-        if(newGini < bestGini)
-            then do
-            let attributeThreshold = ((row !! attributeIndex))
-            _learnDecisionTree inputData (processingIndex + 1) (leftBucket, rightBucket, classes) attributeIndex (newGini, attributeIndex, attributeThreshold)
-            else _learnDecisionTree inputData (processingIndex + 1) (leftBucket, rightBucket, classes) attributeIndex (bestGini, bestAttributeIndex, bestAttributeThreshold)
-    | otherwise = do 
-        let (row, className) = inputData !! processingIndex
-        let classIndex = findIndexOf classes className
-        let newLeftBucketValue = (leftBucket !! classIndex) + 1
-        let newLeftBucket = setValueAt leftBucket newLeftBucketValue classIndex
-
-        let newRightBucketValue = (rightBucket !! classIndex) - 1
-        let newRightBucket = setValueAt rightBucket newRightBucketValue classIndex
-
-        let giniLeft = giniScore newLeftBucket classIndex
-        let giniRight = giniScore newRightBucket classIndex
-        let newGini = calcGini (newLeftBucket, giniLeft) (newRightBucket, giniRight)
-        let (prevRow, _prevClassName) = inputData !! (processingIndex - 1)
-        if((row !! attributeIndex) == (prevRow !! attributeIndex))
-            then _learnDecisionTree inputData (processingIndex + 1) (leftBucket, rightBucket, classes) attributeIndex (bestGini, bestAttributeIndex, bestAttributeThreshold)
-            else do
-                if(newGini < bestGini)
-                    then do
-                    let attributeThreshold = ((row !! attributeIndex) + (prevRow !! attributeIndex)) / 2
-                    _learnDecisionTree inputData (processingIndex + 1) (leftBucket, rightBucket, classes) attributeIndex (newGini, attributeIndex, attributeThreshold)
-                    else 
-                        if(newGini == bestGini && bestAttributeIndex == attributeIndex)
-                            then do
-                                let attributeThreshold = ((row !! attributeIndex) + bestAttributeThreshold) / 2
-                                _learnDecisionTree inputData (processingIndex + 1) (leftBucket, rightBucket, classes) attributeIndex (newGini, attributeIndex, attributeThreshold)
-                            else do _learnDecisionTree inputData (processingIndex + 1) (leftBucket, rightBucket, classes) attributeIndex (bestGini, bestAttributeIndex, bestAttributeThreshold)
-
-
-
-trainingDataSortFnc :: Int -> ([Double], String) -> ([Double], String) -> Ordering
-trainingDataSortFnc index1D (data1, _className1) (data2, _className2) = 
+import Text.Parsec 
+    (ParseError, digit, many1, 
+    optionMaybe, oneOf, char, many, string, (<|>), 
+    try, noneOf, spaces, eof, newline, endBy, sepBy)
+import System.Environment (getArgs)
+import Text.Parsec.String (parseFromFile, Parser)
+import Data.List (sortBy)
+import Control.Applicative ((<$>), (<*))
+
+data TrainingData = TrainingData 
+    [Double] -- ^ Array including for each attribute one value
+    String -- ^ class for concrete values of attributes
+    deriving(Show, Eq)
+
+data LearnTrainingTreeProps = LearnTrainingTreeProps 
+    Double -- ^ Gini score
+    Int -- ^ Attribute array index
+    Double -- ^ Attribute threshold
+
+data DecisionTree aI aT className = 
+    Leaf className | -- ^ Leaf node representing certain class
+    EmptyTree | -- ^ EmptyTree only if trainingData is an empty array
+    Node aI aT (DecisionTree aI aT className) (DecisionTree aI aT className) -- ^ Node, be which we can clasify the data by threshold aT at attributeIndex aI
+
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+------------------------------- input parsing ---------------------
+
+-- | Parses one column of input data file (column means sequance of characters splitted by whitespace character)
+parseColumn :: Parser String
+parseColumn = do
+    className <- many (noneOf "\n,")
+    return (className)
+
+-- | Parses multiple columns
+parseColumns :: Parser [String]
+parseColumns = parseColumn `sepBy` separator
+    where
+        separator = many (char ' ') <* char ',' <* many (char ' ')
+
+parseColumnsList :: Parser [[String]]
+parseColumnsList = (parseColumns `endBy` newline) <* eof
+
+-- | Parses file to array of columns splitted by ','
+parseFile :: 
+    FilePath -> -- ^ path to file which should be parsed
+    IO (Either ParseError [[String]])
+parseFile path = parseFromFile parseColumnsList path
+
+-- | Parses 2D array of columns (strings) to 2D array of double values
+parseNewDataList :: 
+    [[String]] -> -- ^ 2d array of strings which will be parsed to doubles
+    [[Double]]
+parseNewDataList [] = []
+parseNewDataList (item:items) = parseNewData item : parseNewDataList items
+    where 
+        parseNewData [] = []
+        parseNewData (number: restNumbers) = (read number) : (parseNewData restNumbers)
+
+-- | Parses 2D array of columns (strings) to array of TrainingData
+parseTrainingDataList :: 
+    [[String]] -> -- ^ 2d array of strings which will be parsed to array of TrainingData
+    [TrainingData]
+parseTrainingDataList [] = []
+parseTrainingDataList (item : items) = parseTrainingData item : parseTrainingDataList items 
+    where 
+        parseTrainingData :: [String] -> TrainingData
+        parseTrainingData [] = TrainingData [] ""
+        parseTrainingData (actualItem: []) = TrainingData [] actualItem
+        parseTrainingData (actualItem: restItems) =
+            let (TrainingData numbers className) = parseTrainingData restItems
+                newNumbers = (read actualItem) : numbers
+            in (TrainingData newNumbers className)
+
+-- | Parses decisionTree file which has the following structure (S is starting nonterminal symbol of simplified (pseudo)grammar):
+-- S -> <NodeLeaf>
+-- <Node> -> Node: <Int>, <Double>
+-- depth * '  '<NodeLeaf>
+-- depth * '  '<NodeLeaf>
+-- <NodeLeaf> -> <Node> | <Leaf>
+-- <Leaf> -> Leaf: <String>
+-- where depth indicates depth in the decision tree
+parseDecisionTree :: 
+    String -> -- ^ String indicating the actual required indent
+    Parser (DecisionTree Int Double String)
+parseDecisionTree indentStr = do 
+    _ <- string indentStr
+    node <- try $ parseNode <|> parseLeaf
+    case node of
+        Left l -> return $ Leaf l
+        Right (aI, aT) -> do 
+            rest <- (parseDecisionTree (indentStr ++ "  "))
+            rest2 <- (parseDecisionTree (indentStr ++ "  "))
+            return $ Node aI aT rest rest2
+  where
+    -- | Parses <Node> NonTerminal
+    parseNode = do 
+        _ <- string "Node:"
+        _ <- spaces
+        aI <- read <$> many1 digit
+        _ <- string ","
+        _ <- spaces
+        aT <- parseFloat
+        _ <- string "\n"
+        return $ Right (aI, aT)
+    -- | Parses <Leaf>
+    parseLeaf = do 
+        _ <- string "Leaf: "
+        className <- Left <$> ( many (noneOf "\n"))
+        _ <- try $ string "\n" <|> string ""
+        return className
+    -- | parses <Double> nonterminal, this function will accept numbers in scientific notation, with decimal part and without it
+    parseFloat = do
+        sign <- optionMaybe (oneOf "+-")
+        whole <- many1 digit
+        maybeDot <- optionMaybe (char '.')
+        decimal <- optionMaybe (many digit)
+        e <- optionMaybe (char 'e')
+        signExponent <- optionMaybe (oneOf "+-")
+        exponentDigits <- optionMaybe (many1 digit)
+        case (sign, maybeDot, decimal, e, signExponent, exponentDigits) of
+            (Nothing, Nothing, Nothing, Nothing, Nothing, Nothing) -> return (read whole) -- 11
+            (Just c, Nothing, Nothing, Nothing, Nothing, Nothing) -> return (read (c : whole)) -- +11
+            (Just c, Nothing, Nothing, Just e2, Nothing, Just digitsExp) ->
+                return (read ((c : whole) ++ (e2 : digitsExp))) -- +11e10
+            (Just c, Nothing, Nothing, Just e2, Just signExponent2, Just digitsExp) -> -- +11e+10
+                return (read ((c : whole) ++ (e2 : (signExponent2 : digitsExp))))
+            (Just c, Just dot, Just decimal2, Nothing, Nothing, Nothing) -> -- +11.2
+                return (read ((c : whole) ++ (dot : decimal2)))
+            (Just c, Just dot, Just decimal2, Just e2, Nothing, Just digits) ->  -- +11.2e10
+                return (read ((c : whole) ++ (dot : decimal2) ++ (e2 : digits)))
+            (Just c, Just dot, Just decimal2, Just e2, Just esign, Just digits) -> -- +11.2e+10
+                return (read ((c : whole) ++ (dot : decimal2) ++ (e2 : (esign: digits))))
+
+            (Nothing, Nothing, Nothing, Just e2, Nothing, Just digits) -> -- 11e10
+                return (read ((whole) ++ (e2 : digits)))
+            (Nothing, Nothing, Nothing, Just e2, Just signExponent2, Just digitsExp) -> -- 11e+10
+                return (read ((whole) ++ (e2 : (signExponent2 : digitsExp))))
+            (Nothing, Just dot, Just decimal2, Nothing, Nothing, Nothing) -> -- 11.2
+                return (read ((whole) ++ (dot : decimal2)))
+            (Nothing, Just dot, Just decimal2, Just e2, Nothing, Just digits) ->  -- 11.2e10
+                return (read ((whole) ++ (dot : decimal2) ++ (e2 : digits)))
+            (Nothing, Just dot, Just decimal2, Just e2, Just esign, Just digits) -> -- 11.2e+10
+                return (read ((whole) ++ (dot : decimal2) ++ (e2 : (esign: digits))))
+            _ -> fail "Špatný formát čísla!"
+
+
+-- | Parses the decision Tree file. More informations at function parseDecisionTree
+parseDecisionTreeFile :: FilePath -> IO (Either ParseError (DecisionTree Int Double String))
+parseDecisionTreeFile path = parseFromFile (parseDecisionTree "") path
+
+
+
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+------------------------------- task 1 - classifying ---------------------
+
+-- | classifies according to the decision tree one data item
+decisionTreeClasify :: 
+    DecisionTree Int Double String -> -- ^ Decision tree by which we are classifying
+    [Double] -> -- ^ Array with value for each attribute by which we are classifying
+    String
+decisionTreeClasify (Leaf className) _ = className
+decisionTreeClasify (Node aI aT left right) datas
+    | (datas !! aI) <= aT = decisionTreeClasify left datas
+    | otherwise = decisionTreeClasify right datas
+decisionTreeClasify EmptyTree _ = ""
+
+-- | Classifies all data entries according to the decision tree
+decisionTreeClasifyList :: 
+    DecisionTree Int Double String -> -- ^ Decision tree by which we are classifying
+    [[Double]] -> -- ^ 2D array with values for each attribute by which we are classifying
+    [String]
+decisionTreeClasifyList tree (item : []) = [decisionTreeClasify tree item]
+decisionTreeClasifyList tree (item: rest) = (decisionTreeClasify tree item) : 
+    decisionTreeClasifyList tree rest
+decisionTreeClasifyList _ _ = []
+
+
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+------------------------------- task 2 - decision tree training ---------------------
+
+updateUniqueCount :: (Eq a) => [(a, Int)] -> a -> [(a, Int)]
+updateUniqueCount [] find = [(find, 1)]
+updateUniqueCount ((item, countNumber): rest) find
+    | item == find = (item, countNumber + 1) : rest
+    | otherwise = (item, countNumber) : updateUniqueCount rest find
+
+uniqueCount :: (Eq b, Show b) => (a -> b) -> [a] -> [(b, Int)]
+uniqueCount _f [] = []
+uniqueCount f (item:[]) = [((f item), 1)]
+uniqueCount f (item: rest) = 
+    let countArray = uniqueCount f rest
+    in updateUniqueCount countArray (f item)
+
+
+giniScore :: [TrainingData] -> Double 
+giniScore classes =
+    let uniqueCounts = uniqueCount (\(TrainingData _doubles className) -> className) classes
+        lengthClasses = fromIntegral (length classes) :: Double
+        probabilities = [((fromIntegral (snd x) :: Double) / lengthClasses) | x <- uniqueCounts ]
+    in 1 - (foldr (\x localSum -> localSum + (x ** 2)) 0 probabilities)
+
+splitData :: Int -> Double -> [TrainingData] -> ([TrainingData], [TrainingData])
+splitData aI aT ((TrainingData doubles className): []) 
+    | (doubles !! aI) > aT = ([], [TrainingData doubles className])
+    | otherwise = ([TrainingData doubles className], [])
+splitData aI aT ((TrainingData doubles className): rest)
+    | (doubles !! aI) > aT = 
+        let (leftData, rightData) = splitData aI aT rest
+        in (leftData, (TrainingData doubles className) : rightData)
+    | otherwise = 
+        let (leftData, rightData) = splitData aI aT rest 
+        in ((TrainingData doubles className) : leftData, rightData)
+splitData _ _ [] = ([], [])
+
+findBestSplit :: [TrainingData] -> LearnTrainingTreeProps
+findBestSplit [] = (LearnTrainingTreeProps 0.0 (-1) 0.0)
+findBestSplit (TrainingData doubles className : restData) = 
+    findBestSplitProcessAttributes ((TrainingData doubles className) : restData) 0 (length(doubles)) 
+                                            (LearnTrainingTreeProps 1.0 (-1) 0.0)
+
+
+getMidpointArrays :: [TrainingData] -> Int -> ([Double], [Double])
+getMidpointArrays trainingData attributeIndex = 
+    let firstArray = getMidpointArrayFn trainingData attributeIndex (True, 0)
+        secondArray = reverse firstArray
+    in (firstArray, secondArray)
+    where 
+        getMidpointArrayFn :: [TrainingData] -> Int -> (Bool, Double) -> [Double]
+        getMidpointArrayFn (_trainingData@(TrainingData doubles _className): restTrainingData) localAttributeIndex (firstLoad, prevValue)
+            | firstLoad == True && restTrainingData == [] = [(doubles !! localAttributeIndex)]
+            | firstLoad == True = (doubles !! localAttributeIndex) : getMidpointArrayFn restTrainingData localAttributeIndex (False, (doubles !! attributeIndex))
+            | restTrainingData == [] && (doubles !! localAttributeIndex) /= prevValue = [(doubles !! localAttributeIndex)]
+            | ((doubles !! localAttributeIndex) /= prevValue) = (doubles !! localAttributeIndex) : getMidpointArrayFn restTrainingData localAttributeIndex (False, (doubles !! attributeIndex))
+            | restTrainingData == [] = []
+            | otherwise = getMidpointArrayFn restTrainingData localAttributeIndex (False, prevValue)
+        getMidpointArrayFn [] _ _ = []
+
+calcMidpoints :: ([Double], [Double]) -> [Double]
+calcMidpoints ((leftThreshold: []), (rightThreshold: [])) = [(leftThreshold + rightThreshold) / 2.0]
+calcMidpoints ((leftThreshold:leftData), (rightThreshold: rightData)) = ((leftThreshold + rightThreshold) / 2.0) : calcMidpoints (leftData, rightData)
+calcMidpoints _ = []
+
+findBestSplitProcessAttributes :: [TrainingData] -> Int -> Int -> LearnTrainingTreeProps -> LearnTrainingTreeProps
+findBestSplitProcessAttributes trainingData processingAI attributesCount learnProps@(LearnTrainingTreeProps prevBestGini _prevAI _prevAT) =
+        let sortedTrainingData = sortBy (trainingDataSortFnc processingAI) trainingData
+            midpointsArrays = getMidpointArrays sortedTrainingData processingAI
+            midpoints = calcMidpoints midpointsArrays
+        in recursiveCall (findBestSplitProcessMidpoints midpoints trainingData processingAI learnProps)
+        where 
+            recursiveCall :: LearnTrainingTreeProps -> LearnTrainingTreeProps
+            recursiveCall trainingTreeProps
+                | processingAI == (attributesCount - 1) = selectBestProps trainingTreeProps
+                | otherwise = findBestSplitProcessAttributes trainingData (processingAI + 1) attributesCount (selectBestProps trainingTreeProps)
+            selectBestProps :: LearnTrainingTreeProps -> LearnTrainingTreeProps 
+            selectBestProps (LearnTrainingTreeProps bestGini aI aT)
+                | bestGini < prevBestGini = LearnTrainingTreeProps bestGini aI aT 
+                | otherwise = learnProps
+
+findBestSplitProcessMidpoints :: [Double] -> [TrainingData] -> Int -> LearnTrainingTreeProps -> LearnTrainingTreeProps
+findBestSplitProcessMidpoints [] _ _ props = props
+findBestSplitProcessMidpoints (threshold : restMidpoints) trainingData processingAI learnProps =
+    let (leftData, rightData) = splitData processingAI threshold trainingData
+        giniLeft = giniScore leftData
+        giniRight = giniScore rightData 
+        leftDataSize = fromIntegral (length(leftData)) :: Double
+        rightDataSize = fromIntegral (length(rightData)) :: Double
+        totalSize = leftDataSize + rightDataSize
+        gini = (leftDataSize * giniLeft + rightDataSize * giniRight) / totalSize
+    in callRecursive (getBestGini learnProps (LearnTrainingTreeProps gini processingAI threshold))
+    where 
+        getBestGini :: LearnTrainingTreeProps -> LearnTrainingTreeProps -> LearnTrainingTreeProps 
+        getBestGini puvLearnProps@(LearnTrainingTreeProps prevBestGini _prevAI _prevAT) localLearnProps@(LearnTrainingTreeProps gini _aI _aT)
+            | gini < prevBestGini = localLearnProps
+            | otherwise = puvLearnProps
+        callRecursive :: LearnTrainingTreeProps -> LearnTrainingTreeProps
+        callRecursive bestLearnProps
+            | restMidpoints == [] = bestLearnProps
+            | otherwise = findBestSplitProcessMidpoints restMidpoints trainingData processingAI bestLearnProps 
+
+
+trainingDataSortFnc :: Int -> TrainingData -> TrainingData -> Ordering
+trainingDataSortFnc index1D (TrainingData data1 _className1) (TrainingData data2 _className2) = 
     compare (data1 !! index1D) (data2 !! index1D)
 
 
-task1 :: String -> String -> [String]
-task1 treeFileContent dataFileContent = do
-    let (tree, _str) = (loadTreeString treeFileContent 0 0)
+buildTree :: [TrainingData] -> DecisionTree Int Double String
+buildTree [] = EmptyTree
+buildTree (trainingData@(TrainingData _doubles className): restTrainingData) = do
+    let trainingTreeProps = findBestSplit (trainingData : restTrainingData)
+        in buildTreeHelperFn (trainingData : restTrainingData) trainingTreeProps
+    where
+        buildTreeHelperFn :: [TrainingData] -> LearnTrainingTreeProps -> DecisionTree Int Double String 
+        buildTreeHelperFn localTrainingData (LearnTrainingTreeProps _bestGini aI aT)
+            | (length (uniqueCount (\(TrainingData _doubles localClassName) -> localClassName) localTrainingData)) == 1 = 
+                Leaf className
+            | otherwise =
+                let (leftData, rightData) = splitData aI aT localTrainingData
+                in (Node aI aT (buildTree leftData) (buildTree rightData))
 
-    let grid = (convertToGridOfDoubles dataFileContent ',' '\n')
 
-    let result = decisionTree_clasifyAll tree grid 0
-    result
 
-task1Print :: [String] -> IO()
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+
+-- | Prints classified data (its className) to each line
+task1Print :: 
+    [String] -> -- ^ Array of classified classNames
+    IO()
 task1Print [] = putStr("")
 task1Print (item: []) = putStrLn(item)
 task1Print (item : rest) = do 
     putStrLn(item) 
     task1Print rest
 
-logBase2 :: Double -> Double
-logBase2 x = log x / log 2
-
-task2 :: String -> DecisionTree Int Double String
-task2 trainingDataFileContent = do 
-    let trainingData = (convertToGridOfTrainingData trainingDataFileContent ',' '\n')
-
-    let learnedDecisionTree = learnDecisionTree trainingData (ceiling (logBase 2 (fromIntegral (length trainingData))) + 2)
-    learnedDecisionTree
-
-task2Print :: DecisionTree Int Double String -> String -> IO()
+-- | Prints the trained DecisionTree in same format as in task1, described in parseDecisionTree
+task2Print :: 
+    DecisionTree Int Double String -> -- ^ Trained decision tree to print
+    String -> -- ^ Indentation to print
+    IO()
 task2Print EmptyTree _indentStr = putStrLn("")
 task2Print (Leaf className) indentStr = putStrLn(indentStr ++ "Leaf: " ++ className)
 task2Print (Node attributeIndex attributeThreshold (left) (right)) indentStr = do 
@@ -364,59 +328,35 @@ task2Print (Node attributeIndex attributeThreshold (left) (right)) indentStr = d
     task2Print right (indentStr ++ "  ")
 
 main :: IO ()
-main = do
-    (first: args) <- getArgs
-    case first of 
-        "-1"  -> do 
-            let argsLen = length(args)
-            if (argsLen < 2) 
-                then putStrLn "Chybi vstupni soubory!!!"
-                else do
-                    let fileDecisionTree = args !! 0
-                    let fileClasifyData = args !! 1
-                    fileDecisionTreeContents <- readFile fileDecisionTree
-                    fileClasifyDataContents <- readFile fileClasifyData
-                    let result = task1 fileDecisionTreeContents fileClasifyDataContents
-
-                    --let grid = (convertToGridOfDoubles fileClasifyDataContents ',' '\n')
-                    --print grid
-
-                    task1Print result
-        "-2" -> do 
-            let argsLen = length(args)
-            if (argsLen < 1) 
-                then putStrLn "Chybi vstupni soubor!!!"
-                else do 
-                    let fileTrainingData = args !! 0
-                    fileTrainingDataContents <- readFile fileTrainingData
-                    let learnedDecisionTree = task2 fileTrainingDataContents
-                    task2Print learnedDecisionTree ""
-
-                    -- let trainingData = (convertToGridOfTrainingData fileTrainingDataContents ',' '\n')
-                    -- let (dataLeft, dataRight) = splitData trainingData 0 (0, 2.11)
-                    -- print dataLeft
-                    -- print "------"
-                    -- print dataRight
-
-                    -- let (leftBucket, rightBucket, classes) = initBuckets dataLeft 0
-                    -- let (bestGini, bestAttributeIndex, bestAttributeThreshold) = _learnDecisionTreeProcessAttribute dataLeft 0 2 (leftBucket, rightBucket, classes) (10.0, 0, 0.0)
-                    -- print classes
-
-                    -- let sortedTrainingData = sortBy (trainingDataSortFnc 0) dataLeft
-                    -- let (newBestGini, newBestAttributeIndex, newBestAttributeThreshold) = _learnDecisionTree sortedTrainingData 0 (leftBucket, rightBucket, classes) 0 (10.0, 0, 0.0)
-                    -- print newBestGini
-                    -- print newBestAttributeIndex
-                    -- print newBestAttributeThreshold
-                    -- print sortedTrainingData
-
-
-                    -- let (row, className) = sortedTrainingData !! 0
-                    -- let classIndex = findIndexOf classes className
-
-                    -- let giniRight = giniScore rightBucket classIndex
-                    -- print giniRight
-        _ -> do 
-            putStrLn("Usage: flp-fun -1 <soubor obsahujici strom> <soubor obsahujici nove data> | flp-fun -2 <soubor obsahujici trenovaci data>")
-
-
--- podívat se na implementaci třídyx show (možná myslí deriving Show)
+main = do 
+    actualGetArgs <- getArgs
+    case actualGetArgs of 
+        ("-1": args)  -> runTask1 args
+        ("-2":args) -> runTask2 args
+        _ -> putStrLn ("Neznamy parametr!")
+    where 
+        -- | run task1 (clasifying by existing decision tree)
+        runTask1 args 
+            | (length(args)) < 2 = putStrLn "Chybi vstupni soubory!!!"
+            | otherwise = do 
+                result <- parseFile (args !! 1)
+                case result of
+                    Left err -> putStrLn $ "Chyba při parsování souboru: " ++ show err
+                    Right strings -> runParsingDecisionTree args strings
+        -- | helper function to run task1 (parses decisionTree input file and runs task1)
+        runParsingDecisionTree args strings = do
+            let numbers = parseNewDataList strings
+            result3 <- parseDecisionTreeFile (args !! 0)
+            case result3 of
+                Left err -> putStrLn $ "Chyba při parsování souboru: " ++ show err
+                Right tree -> task1Print (decisionTreeClasifyList tree numbers)
+        -- | run task2 (training decision tree)
+        runTask2 args
+            | (length(args)) < 1 = putStrLn "Chybi vstupni soubor!!!"
+            | otherwise = do 
+                result <- parseFile (args !! 0)
+                case result of
+                    Left err -> putStrLn $ "Chyba při parsování souboru: " ++ show err
+                    Right strings -> do
+                        let trainingData = parseTrainingDataList strings
+                        task2Print (buildTree trainingData) ""

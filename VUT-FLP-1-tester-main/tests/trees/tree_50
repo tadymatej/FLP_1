@@ -1,11 +1,13 @@
-Node: 0, 686.53
-  Node: 8, 943.665
-    Node: 7, 669.78
-      Leaf: Class7
-      Node: 0, 327.2
-        Leaf: Class5
-        Node: 0, 555.175
-          Leaf: Class10
-          Leaf: Class8
-    Leaf: Class9
-  Leaf: Class3
+Node: 5, 280.76
+  Leaf: Class5
+  Node: 3, 269.43
+    Leaf: Class7
+    Node: 0, 412.87
+      Leaf: Class6
+      Node: 0, 539.705
+        Leaf: Class1
+        Node: 0, 651.785
+          Leaf: Class3
+          Node: 0, 783.7
+            Leaf: Class8
+            Leaf: Class9

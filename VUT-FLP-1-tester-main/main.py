@@ -46,7 +46,7 @@ def run_task_1(idx):
     
 def run_task_2(idx):
     try:
-        command = ["./flp-fun", "-2", f'./tests/training_data/data_{str(idx)}']
+        command = ["python3", "./project.py", f'./tests/training_data/data_{str(idx)}']
         result = subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if result.returncode != 0:
             raise ('flp-fun exited with non-zero return code')
