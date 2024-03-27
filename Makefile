@@ -1,8 +1,8 @@
 # Název výstupního souboru
-OUTPUT_NAME = flp-run
+OUTPUT_NAME = flp-fun
 
 # Zdrojové soubory
-SRCS = project-loadingTree.hs
+SRCS = flp-fun.hs
 
 # Cíle
 all: $(OUTPUT_NAME)
@@ -16,9 +16,17 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.hs
 $(OUTPUT_NAME): $(patsubst $(SRC_DIR)/%.hs,$(OBJ_DIR)/%.o,$(SRCS))
 	ghc $^ -Wall -o $@
 
+run_tests: 
+	cp ./flp-fun ./public
+	python3 public/test_flp.py --test_type inference
+	python3 public/test_flp.py --test_type training
+
 # Cíl pro čištění
 clean:
 	rm -rf $(OBJ_DIR) $(OUTPUT_NAME)
+
+zip: 
+	zip xzalma00.zip Makefile flp-fun.hs
 
 # Nastavení implicitních cílů
 .PHONY: all clean
